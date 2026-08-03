@@ -1,0 +1,143 @@
+GIT WORKFLOW GUIDE -- flux_jacobian
+=====================================
+Personal reference for working across two machines (Windows + Linux).
+Repo: https://github.com/AFFONG/flux_jacobian (private)
+
+
+THE GOLDEN RULE
+---------------
+    Pull before you start working.
+    Push before you stop working.
+
+That's it. As long as you follow this, you will almost never see a merge
+conflict. This repo uses ONE branch (master) -- no feature branches, no
+pull requests. You work directly on master, on whichever machine you're
+sitting at.
+
+
+DAILY ROUTINE
+-------------
+
+1) START of a session, on whichever machine you're using:
+
+       git pull
+
+   This pulls down any changes you made on the OTHER machine last time.
+
+2) ...do your work (edit notebooks, run scripts, etc)...
+
+3) END of a session, before you walk away / switch machines:
+
+       git add -A
+       git commit -m "short description of what changed"
+       git push
+
+   If you forget this and start working on the other machine, `git pull`
+   there will still work -- you'll just be missing your latest changes
+   until you go back and push them.
+
+
+BASIC COMMANDS CHEAT SHEET
+---------------------------
+
+   git status
+       Shows what's changed, what's staged, what's not tracked yet.
+       Run this often -- it's always safe, never changes anything.
+
+   git add -A
+       Stages ALL changed/new files for the next commit.
+       (Use `git add <path>` to stage just one file/folder instead.)
+
+   git commit -m "message"
+       Saves a snapshot of everything staged, with a short note about
+       what changed. Write messages like you're leaving a note for
+       future-you: "add nev/ncv sweep to eigensolver", not "update".
+
+   git push
+       Uploads your local commits to GitHub.
+
+   git pull
+       Downloads commits from GitHub that you don't have locally yet,
+       and merges them into your working copy.
+
+   git log --oneline
+       Shows a short history of commits, newest first.
+
+   git diff
+       Shows exact line-by-line changes not yet staged.
+
+   git diff --cached
+       Shows exact line-by-line changes that ARE staged (about to be
+       committed).
+
+
+SETTING UP ON A (NEW OR OTHER) MACHINE
+----------------------------------------
+First time only, on a machine that doesn't have the repo yet:
+
+       gh auth login              (if gh isn't already logged in there)
+       gh repo clone AFFONG/flux_jacobian
+
+   or, without gh:
+
+       git clone https://github.com/AFFONG/flux_jacobian.git
+
+After that, it's just `git pull` / `git push` as above.
+
+
+WHAT'S TRACKED VS IGNORED
+---------------------------
+Tracked (goes to GitHub):
+   notebooks/, flux_jacobians/, scripts/, results/, README.md, and this file.
+
+NOT tracked (stays local-only on each machine, listed in .gitignore):
+   cases/    -- raw CFD case files (large)
+   data/     -- generated Jacobian / eigendata .npz files (large)
+   archive/  -- old superseded notebooks/data (large)
+
+This means those folders do NOT sync between machines via git. If you
+need a specific .npz or case folder on the other machine, copy it
+manually (scp/rsync) -- git is intentionally not carrying it.
+
+
+IF YOU EVER HIT A CONFLICT
+-----------------------------
+This means you edited the same file on both machines without syncing
+in between. `git pull` will say something like "CONFLICT" or "merge
+failed". To fix:
+
+   1) git pull --rebase
+   2) Open the file(s) it flags -- you'll see markers like:
+          <<<<<<< HEAD
+          your local version
+          =======
+          the version from the other machine
+          >>>>>>> ...
+      Edit the file by hand to keep what you want, delete the markers.
+   3) git add <the file you fixed>
+   4) git rebase --continue
+   5) git push
+
+   If it gets confusing and you just want to bail out and start over:
+       git rebase --abort
+   (This undoes the rebase attempt and puts you back where you started,
+   nothing is lost.)
+
+
+USEFUL gh (GitHub CLI) COMMANDS
+----------------------------------
+   gh repo view --web
+       Opens the repo in your browser.
+
+   gh auth status
+       Check if/how you're logged in on this machine.
+
+
+A NOTE ON VERSIONING NOTEBOOKS
+---------------------------------
+This project already uses its own versioning convention for notebooks
+(v1, v2, v3, v4 folders/filenames) instead of git branches. Keep doing
+that -- when you want to try something new/risky in a notebook, copy it
+to a new version rather than branching in git. Commit each version as
+you go; git just keeps the history of that convention, it doesn't
+replace it.
