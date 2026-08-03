@@ -1,0 +1,17 @@
+# Raw CFD case data and generated data artifacts -- large binaries, not code.
+# See README.md for what lives in each of these.
+/cases/
+/data/
+/archive/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp

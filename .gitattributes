@@ -1,0 +1,7 @@
+# Force LF line endings for scripts, regardless of the checking-out
+# machine's core.autocrlf setting. Prevents "bad interpreter" errors when
+# a .sh file picks up CRLF on Windows and is then run on Linux.
+*.sh    text eol=lf
+*.py    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
