@@ -17,5 +17,5 @@ Thumbs.db
 *.swp
 
 # figures
-.svg
+*.svg
 .png
