@@ -166,8 +166,9 @@ def report_and_save(E, J, nev, sigma, out_path, residual_tol=1e-6):
 # Main
 # =====================================================================
 if __name__ == "__main__":
-    Mesh, Re, Mach = 21228, 60, 0.2
-    data_dir = "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4"
+    Mesh, Re, Mach = 55222, 60, 0.2
+    mesh_ver = 3
+    data_dir = f"/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4/v{mesh_ver}_mesh"
     JACOBIAN_PATH = f"{data_dir}/jacobian_cylinder_{Mesh}_Re{Re}_M{Mach}_fd.npz"
 
     f = 9.505
@@ -183,6 +184,11 @@ if __name__ == "__main__":
     log(f"Run time: {runtime:.2f}s ({nprocs} MPI ranks)")
 
 
-    out_dir = "/home/ahf25/git/flux_jacobian/data/eigendata"
+    out_dir = f"/home/ahf25/git/flux_jacobian/data/eigendata/v{mesh_ver}_mesh"
     out_path = f"{out_dir}/eigendata_{Mesh}_Re{Re}_M{Mach}_nev{nev}_ncv{ncv}_np{nprocs}.npz"
     report_and_save(E, J, nev, SIGMA, out_path)
+
+# command to run 
+# conda activate petsc-complex
+# cd ~/projects/eigensolver
+# # nohup mpirun -np 4 python eigensolver_mpi.py > solve_output.log 2>&1 &
