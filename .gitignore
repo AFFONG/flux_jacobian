@@ -19,6 +19,6 @@ Thumbs.db
 # figures
 *.svg
 *.png
-
+*.pdf
 # log files
 *.log
