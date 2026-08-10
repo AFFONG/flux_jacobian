@@ -166,15 +166,17 @@ def report_and_save(E, J, nev, sigma, out_path, residual_tol=1e-6):
 # Main
 # =====================================================================
 if __name__ == "__main__":
-    Mesh, Re, Mach = 55222, 60, 0.2
+    Mesh, Re, Mach = 199560, 60, 0.2
     mesh_ver = 3
     data_dir = f"/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4/v{mesh_ver}_mesh"
     JACOBIAN_PATH = f"{data_dir}/jacobian_cylinder_{Mesh}_Re{Re}_M{Mach}_fd.npz"
+    
+    log(f"Mesh = {Mesh}, Re = {Re}, Mach = {Mach}, mesh_ver = {mesh_ver}")
+    log(f"Jacobian path: {JACOBIAN_PATH}")
 
     f = 9.505
     SIGMA = 0.0 + f * 2 * np.pi * 1j
     nev, ncv = 10, 300
-
     J_csr = read_jacobian(JACOBIAN_PATH)
     J = scipy_csr_to_petsc_parallel(J_csr, comm)
 
@@ -190,5 +192,17 @@ if __name__ == "__main__":
 
 # command to run 
 # conda activate petsc-complex
-# cd ~/projects/eigensolver
-# # nohup mpirun -np 4 python eigensolver_mpi.py > solve_output.log 2>&1 &
+# cd /home/ahf25/git/flux_jacobian/eigensolver
+
+# tmux new -s eigensolve 
+
+# Configure shell variable to prevent oversubscription of threads
+# export MKL_NUM_THREADS=1
+# export OPENBLAS_NUM_THREADS=1
+
+# don't run it with 15/16 cores to be save, run it with 8 might be better
+# nohup mpirun -np 12 python eigensolver_mpi.py > solve_output.log 2>&1 &
+
+# check status
+# ps aux | grep eigensolver_mpi.py
+# kill <PID>
