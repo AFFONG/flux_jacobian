@@ -675,11 +675,15 @@ if __name__ == "__main__":
     main()
 
 # how to run 
-# python assemble_jacobian_v4.py \
+#　conda activate /home/ahf25/anaconda3/envs/pyau3d_env
+# nohup python -u assemble_jacobian_v4.py \
 #     --mesh     1515828 \
 #     --re       60 \
 #     --mach     0.2 \
 #     --mesh-ver 3 \
 #     --viscous \
+#     --eps-visc  1e-8 \
+#     --eps-ghost 1e-6 \
 #     --case-dir  "/home/ahf25/CFD_2d_cylinder_all/Steady/Ma0.2/v3_mesh/2d_cylinder_1515828_Re60" \
-#     --data-dir  "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4"
+#     --data-dir  "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4" \
+#     > assemble_1515828.log 2>&1 &
