@@ -332,17 +332,19 @@ def main():
 if __name__ == "__main__":
     main()
 
+# --ooc-dir   "/mnt/data1/ahf25/" # built in drive in this machine
+# conda activate petsc-complex
 # nohup mpirun -np 10 python -u eigensolver_v2.py \
-#     --jacobian  "/home/ahf25/git/flux_jacobian/data/jacobian_1500000.npz" \
+#     --jacobian  "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4/v3_mesh/jacobian_cylinder_765960_Re60_M0.2_fd.npz" \
 #     --out-dir   "/home/ahf25/git/flux_jacobian/data/eigendata" \
 #     --sigma-real 0.0 \
 #     --sigma-imag 59.72 \
 #     --nev        10 \
-#     --ncv        30 \
-#     --ooc-dir   "/scratch/mumps_ooc" \
+#     --ncv        300 \
+#     --ooc-dir   "/mnt/data1/ahf25/" \
 #     --icntl-14   80 \
-#     --icntl-23   12000 \
-#     --mesh       1500000 \
+#     --icntl-23   10000 \
+#     --mesh       765960\
 #     --re         60 \
 #     --mach       0.2 \
 #     > eigensolver.log 2>&1 &
