@@ -166,7 +166,7 @@ def report_and_save(E, J, nev, sigma, out_path, residual_tol=1e-6):
 # Main
 # =====================================================================
 if __name__ == "__main__":
-    Mesh, Re, Mach = 199560, 60, 0.2
+    Mesh, Re, Mach = 765960, 60, 0.2
     mesh_ver = 3
     data_dir = f"/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v4/v{mesh_ver}_mesh"
     JACOBIAN_PATH = f"{data_dir}/jacobian_cylinder_{Mesh}_Re{Re}_M{Mach}_fd.npz"
