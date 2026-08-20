@@ -205,4 +205,8 @@ if __name__ == "__main__":
 
 # check status
 # ps aux | grep eigensolver_mpi.py
-# kill <PID>
+# kill <PID> to kill the job
+
+# check RAM usage
+# watch -n 2 free -h
+

@@ -655,6 +655,7 @@ def conservative_variables(rst, gamma):
 def parse_args():
     p = argparse.ArgumentParser(
         description="Assemble global flux Jacobian (v5) and save to .npz")
+    p.add_argument("--case_name", type = str, default="cylinder",help= "case name")
     p.add_argument("--mesh",      type=int,   default=765960,  help="Number of mesh nodes")
     p.add_argument("--re",        type=float, default=60.0,    help="Reynolds number")
     p.add_argument("--mach",      type=float, default=0.2,     help="Mach number")
@@ -677,12 +678,13 @@ def parse_args():
 def main():
     args = parse_args()
 
-    Mesh     = args.mesh
-    Re       = args.re
-    Mach     = args.mach
-    mesh_ver = args.mesh_ver
-    gamma    = 1.4
-    R_gas    = 287.0
+    Mesh      = args.mesh
+    Re        = args.re
+    Mach      = args.mach
+    mesh_ver  = args.mesh_ver
+    case_name = args.case_name
+    gamma     = 1.4
+    R_gas     = 287.0
 
     case_dir = args.case_dir.format(
         mach=Mach, ver=mesh_ver, mesh=Mesh, re=int(Re))
@@ -691,7 +693,8 @@ def main():
 
     print("=" * 60)
     print(f"  Global Flux Jacobian Assembler v5")
-    print(f"  Mesh={Mesh}  Re={Re}  Ma={Mach}  viscous={args.viscous}  harten_eps={args.harten_eps}")
+    print(f"  Case={case_name}  Mesh={Mesh}  Re={Re}  Ma={Mach}  "
+          f"viscous={args.viscous}  harten_eps={args.harten_eps}")
     print(f"  eps_visc={args.eps_visc}  eps_ghost={args.eps_ghost}")
     print(f"  Case dir : {case_dir}")
     print(f"  Output   : {data_dir}")
@@ -699,8 +702,8 @@ def main():
 
     # ── Load files ─────────────────────────────────────────────────────────────
     print("\n[1/4] Reading mesh and solution files...")
-    pltfile = PltFileUtils(f"{case_dir}/cylinder.plt")
-    rstfile = UnkFileUtils(f"{case_dir}/cylinder.rst", extend=False)
+    pltfile  = PltFileUtils(f"{case_dir}/{case_name}.plt")
+    rstfile  = UnkFileUtils(f"{case_dir}/{case_name}.unk", extend=False) # change to .rst for cylinder
     fortfile = pd.read_csv(f"{case_dir}/fort.864",
                             sep=r'\s+', header=None).to_numpy()
     rstfile._primitive()
@@ -708,18 +711,43 @@ def main():
     coord  = pltfile.coord
     print(f"  Nodes: {U_list.shape[0]}  Faces: {fortfile.shape[0]}")
 
-    # ── Boundary conditions ─────────────────────────────────────────────────────
+    # ── Boundary conditions -- branch on case_name ──────────────────────────────
     print("\n[2/4] Building boundary list...")
-    u_in = 68.0525;  T_in = 288.15;  P_in = 1.32702
-    flags_bc_map = {
-        1: {'bc_type': 0, 'u_b': u_in,  'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        2: {'bc_type': 0, 'u_b': u_in,  'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        3: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        4: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        5: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        6: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-        7: {'bc_type': 2, 'u_b': 0.0,   'v_b': 0.0, 'w_b': 0.0, 'T_b': T_in, 'P_b': P_in},
-    }
+
+    if case_name == "OAT":
+        u_in  = 252.98;  v_in  = 15.47;  w_in  = 0.0
+        T_in  = 300.0;   P_in  = 18569.0
+        u_out = 252.98;  v_out = 15.47;  w_out = 0.0
+        T_out = 300.0;   P_out = 18569.0
+
+        # bc_type   0=riemann | 1=slip | 2=noslip
+        flags_bc_map = {
+            1: {'bc_type': 2, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            2: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            3: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            4: {'bc_type': 0, 'u_b': u_in,  'v_b': v_in,  'w_b': w_in,  'T_b': T_in,  'P_b': P_in},
+            5: {'bc_type': 0, 'u_b': u_out, 'v_b': v_out, 'w_b': w_out, 'T_b': T_out, 'P_b': P_out},
+        }
+    elif case_name == "cylinder":
+        u_in  = 68.0525;  v_in  = 0.0;  w_in  = 0.0
+        T_in  = 288.15;   P_in  = 1.32702
+        u_out = 68.0525;  v_out = 0.0;  w_out = 0.0
+        T_out = 288.15;   P_out = 1.32702
+
+        flags_bc_map = {
+            1: {'bc_type': 0, 'u_b': u_in,  'v_b': v_in,  'w_b': w_in,  'T_b': T_in,  'P_b': P_in},
+            2: {'bc_type': 0, 'u_b': u_out, 'v_b': v_out, 'w_b': w_out, 'T_b': T_out, 'P_b': P_out},
+            3: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            4: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            5: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            6: {'bc_type': 1, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+            7: {'bc_type': 2, 'u_b': 0.0,   'v_b': 0.0,   'w_b': 0.0,   'T_b': T_in,  'P_b': P_in},
+        }
+    else:
+        raise ValueError(
+            f"No boundary condition map defined for case_name='{case_name}'. "
+            f"Add a branch above with this case's flags_bc_map.")
+
     boundary_list = build_boundary_list(pltfile, coord, fortfile, flags_bc_map)
     print(f"  Boundary nodes: {boundary_list.shape[0]}")
 
@@ -737,14 +765,18 @@ def main():
     runtime = time.perf_counter() - t0
     print(f"  Done.  shape={J.shape}  nnz={J.nnz}  runtime={runtime:.1f}s")
 
-    # ── Save ────────────────────────────────────────────────────────────────────
+    # ── Save -- filename now uses case_name, not hardcoded "cylinder" ───────────
     print("\n[4/4] Saving...")
     out_path = os.path.join(
         data_dir,
-        f"jacobian_cylinder_{Mesh}_Re{int(Re)}_M{Mach}_fd.npz")
+        f"jacobian_{case_name}_{Mesh}_Re{int(Re)}_M{Mach}_fd.npz")
     save_npz(out_path, J)
     print(f"  Saved -> {out_path}")
     print(f"\nTotal runtime: {runtime:.1f}s")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
@@ -765,3 +797,22 @@ if __name__ == "__main__":
 #     --data-dir  "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v5" \
 #     --harten-eps 0.1 \
 #     > assemble_1515828.log 2>&1 &
+
+# OAT 15 case
+# conda activate /home/ahf25/anaconda3/envs/pyau3d_env
+
+# nohup python -u assemble_jacobian_v5.py \
+#     --case_name "OAT" \
+#     --mesh      540156 \
+#     --re        3e6 \
+#     --mach      0.73 \
+#     --mesh-ver  3 \
+#     --viscous \
+#     --eps-visc   1e-8 \
+#     --eps-ghost  1e-6 \
+#     --case-dir   "/home/ahf25/OAT15/OAT15_M0.73_A35" \
+#     --data-dir   "/home/ahf25/git/flux_jacobian/data/flux_jacobian_assembly_v5" \
+#     --harten-eps 0.05 \
+#     > assemble_OAT15.log 2>&1 &
+
+
