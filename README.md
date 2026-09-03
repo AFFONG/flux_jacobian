@@ -1,65 +1,51 @@
 # flux_jacobian
 
-Flux-Jacobian eigenvalue analysis for 2D cylinder flow cases (CFD stability analysis pipeline).
+Flux-Jacobian eigenvalue analysis for 2D CFD cases (cylinder wakes, OAT15 airfoil) —
+a stability-analysis pipeline that assembles a global flux Jacobian, then finds its eigenvalues/eigenmodes (SLEPc/PETSc shift-invert) to study flow instabilities.
 
-## Directory structure
+## Pipeline
 
 ```
-cases/            Raw CFD solver run directories (mesh, solution, restart files) — one per case
-notebooks/        Active analysis notebooks (pipeline code)
-flux_jacobians/    Flux-Jacobian assembly notebooks, versioned v1/v2/v3 (code, not data)
-data/              Generated data artifacts (Jacobian matrices, eigendata) produced by the notebooks
-results/figures/   Output plots (SVG/PNG)
-archive/           Superseded notebook versions and old data no longer in active use
+flux_jacobians/vN  --[assemble Jacobian]-->  jacobian_*.npz
+jacobian_*.npz     --[eigensolver/vN]-->     eigendata_*.npz
+eigendata_*.npz    --[notebooks/eigen_post.ipynb]-->  results/figures/
 ```
 
-### `cases/`
-One folder per CFD run, named `cylinder_<mesh_nodes>_Re<Reynolds>_M<Mach>` (mesh node count omitted
-where the case predates that convention, e.g. `cylinder_Re40`, `cylinder_Re50`). Contains raw solver
-input/output files (`cylinder.*`, `.rst`, `.sol`, `.plt`, logs, etc.).
+Raw CFD case inputs and the intermediate `.npz` data for assembled global flux jacobians and eigenvalues are not in the repo.
+
+## Directory structure (tracked files only)
+
+```
+notebooks/          Active analysis notebooks: mesh/BC prep, CFD post-processing, eigen post-processing
+flux_jacobians/     Flux-Jacobian assembly notebooks/scripts, versioned v1-v5
+eigensolver/        Eigenvalue solver notebooks/scripts, versioned v1-v3
+results/figures/    Output plots (SVG/PNG)
+archive/notebooks/  Superseded notebook(s) kept for reference
+```
 
 ### `notebooks/`
 The active, working notebooks for the pipeline:
 - `mesh_convert.ipynb` — mesh conversion
 - `boundary_list.ipynb` — boundary node list generation
-- `cfd_post.ipynb`, `u_profile.ipynb` — CFD post-processing
-- `eigen_solver.ipynb` — eigenvalue solver
+- `eigen_solver.ipynb` — eigenvalue solver (notebook front-end)
 - `eigen_post.ipynb` — eigenvalue post-processing
-- `plot_flux_jacobian.ipynb` — Jacobian plotting
-- `verifications_flux_jacobian.ipynb` — verification checks
+- `plot_flux_jacobian_v2.ipynb` — Jacobian plotting
+- `plot_sr.ipynb` — spectral radius plotting
+- `verifications_flux_jacobian_v4.ipynb` — verification checks
+- `cfd_post/` — CFD post-processing: `cfd_post.ipynb`, `plots.ipynb`, `plot_residuals.ipynb`,
+  `unsteady.ipynb`, `unsteady_cl_plot.ipynb`, `unsteady_animation_v2.ipynb`/`_v3.ipynb`
 - `testing/` — 1D/2D test notebooks (`1D_test.ipynb`, `2D_test.ipynb`) and associated `.mtx` test matrices
 
-Each of these is the latest version of its notebook; earlier iterations live in `archive/notebooks/`
-and `archive/testing/`.
-
 ### `flux_jacobians/`
-Notebooks that assemble the global flux Jacobian (inviscid/viscous/boundary contributions), grouped by
-pipeline version (`v1`, `v2`, `v3`). This is **code**, distinct from `data/flux_jacobian_assembly_*/`
-below, which holds the data those notebooks produce.
+Notebooks/scripts that assemble the global flux Jacobian (inviscid/viscous/boundary contributions),
+grouped by pipeline version:
+- `v1/` — original assembly + boundary/viscous/inviscid Jacobian notebooks (analytic and FD variants)
+- `v2/`, `v3/` — FD assembly + boundary/viscous notebooks, refactored per version
+- `v4/` — FD assembly notebook plus `assemble_jacobian_v4.py`
+- `v5/` — current version: FD assembly, inviscid Jacobian notebook, `assemble_jacobian_v5.py`
 
-### `data/`
-Generated artifacts, not raw CFD output:
-- `flux_jacobian_assembly_v1.2/`, `v2/`, `v3/` — assembled Jacobian matrices (`.npz`) from each pipeline
-  version (`v1`, the earliest/largest run, has been moved to `archive/data/`)
-- `eigendata/` — eigenvalue/eigenmode solver output (`.npz`)
-
-### `results/figures/`
-Rendered plots: flux-Jacobian sensitivity SVGs (`Re60_M0.2_*.svg`) and the `u_profile_combined.png`
-velocity profile figure.
-
-### `archive/`
-Superseded material kept for reference rather than deleted:
-- `archive/data/flux_jacobian_assembly_v1/` — the original (5GB) assembly run, superseded by v1.2/v2/v3
-- `archive/notebooks/` — prior versions of the root notebooks (`*_v1.ipynb`)
-- `archive/testing/` — prior versions of the 1D/2D test notebooks (`*_v1.ipynb` through `*_v3.ipynb`)
-
-## Known issue
-
-Several active notebooks still contain hardcoded relative paths to the pre-reorg locations
-(e.g. `2d_cylinder_*`, `flux_jacobian_assembly_v2/`) and need updating to the new `cases/` and `data/`
-paths above:
-- `notebooks/eigen_post.ipynb`
-- `notebooks/plot_flux_jacobian.ipynb`
-- `notebooks/verifications_flux_jacobian.ipynb`
-- `notebooks/boundary_list.ipynb`
-- `notebooks/u_profile.ipynb`
+### `eigensolver/`
+Eigenvalue solver notebooks/scripts (SLEPc/PETSc shift-invert), versioned:
+- `v1/` — `eigensolver.ipynb`, `eigensolver_mpi.py`
+- `v2/` — `eigensolver_v2.ipynb`, `eigensolver_v2.py`
+- `v3/` — `eigensolver_mpi_v3.py`

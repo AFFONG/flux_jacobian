@@ -3,6 +3,7 @@
 /cases/
 /data/
 /archive/
+/results
 
 # Python
 __pycache__/
