@@ -8,7 +8,6 @@ a stability-analysis pipeline that assembles a global flux Jacobian, then finds 
 ```
 flux_jacobians/vN  --[assemble Jacobian]-->  jacobian_*.npz
 jacobian_*.npz     --[eigensolver/vN]-->     eigendata_*.npz
-eigendata_*.npz    --[notebooks/eigen_post.ipynb]-->  results/figures/
 ```
 
 Raw CFD case inputs and the intermediate `.npz` data for assembled global flux jacobians and eigenvalues are not in the repo.
@@ -19,7 +18,6 @@ Raw CFD case inputs and the intermediate `.npz` data for assembled global flux j
 notebooks/          Active analysis notebooks: mesh/BC prep, CFD post-processing, eigen post-processing
 flux_jacobians/     Flux-Jacobian assembly notebooks/scripts, versioned v1-v5
 eigensolver/        Eigenvalue solver notebooks/scripts, versioned v1-v3
-results/figures/    Output plots (SVG/PNG)
 archive/notebooks/  Superseded notebook(s) kept for reference
 ```
 
